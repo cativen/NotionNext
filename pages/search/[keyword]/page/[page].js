@@ -109,8 +109,9 @@ const isIterable = obj =>
  */
 async function filterByMemCache(allPosts, keyword) {
   const filterPosts = []
-  if (keyword) {
-    keyword = keyword.trim()
+  keyword = normalizeSearchKeyword(keyword)
+  if (!keyword) {
+    return filterPosts
   }
   for (const post of allPosts) {
     const cacheKey = 'page_block_' + post.id
@@ -135,18 +136,18 @@ async function filterByMemCache(allPosts, keyword) {
     // console.log('全文搜索缓存', cacheKey, page != null)
     post.results = []
     let hitCount = 0
-    for (const i of indexContent) {
-      const c = indexContent[i]
+    for (let indexPosition = 0; indexPosition < indexContent.length; indexPosition++) {
+      const c = normalizeSearchText(indexContent[indexPosition])
       if (!c) {
         continue
       }
-      const index = c.toLowerCase().indexOf(keyword.toLowerCase())
+      const index = c.toLowerCase().indexOf(keyword)
       if (index > -1) {
         hit = true
         hitCount += 1
         post.results.push(c)
       } else {
-        if ((post.results.length - 1) / hitCount < 3 || i === 0) {
+        if ((post.results.length - 1) / hitCount < 3 || indexPosition === 0) {
           post.results.push(c)
         }
       }
@@ -156,6 +157,26 @@ async function filterByMemCache(allPosts, keyword) {
     }
   }
   return filterPosts
+}
+
+function normalizeSearchKeyword(keyword) {
+  if (Array.isArray(keyword)) {
+    keyword = keyword[0]
+  }
+  return typeof keyword === 'string' ? keyword.trim().toLowerCase() : ''
+}
+
+function normalizeSearchText(value) {
+  if (typeof value === 'string') {
+    return value
+  }
+  if (Array.isArray(value)) {
+    return value
+      .map(item => normalizeSearchText(item))
+      .filter(Boolean)
+      .join(' ')
+  }
+  return ''
 }
 
 export default Index

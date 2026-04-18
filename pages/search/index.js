@@ -13,7 +13,7 @@ const Search = props => {
   const { posts } = props
 
   const router = useRouter()
-  const keyword = router?.query?.s
+  const keyword = normalizeSearchKeyword(router?.query?.s)
 
   let filteredPosts
   // 静态过滤
@@ -23,7 +23,7 @@ const Search = props => {
       const categoryContent = post.category ? post.category.join(' ') : ''
       const searchContent =
         post.title + post.summary + tagContent + categoryContent
-      return searchContent.toLowerCase().includes(keyword.toLowerCase())
+      return searchContent.toLowerCase().includes(keyword)
     })
   } else {
     filteredPosts = []
@@ -60,3 +60,10 @@ export async function getStaticProps({ locale }) {
 }
 
 export default Search
+
+function normalizeSearchKeyword(keyword) {
+  if (Array.isArray(keyword)) {
+    keyword = keyword[0]
+  }
+  return typeof keyword === 'string' ? keyword.trim().toLowerCase() : ''
+}
