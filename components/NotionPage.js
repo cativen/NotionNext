@@ -14,6 +14,10 @@ import { NotionRenderer } from 'react-notion-x'
  * @returns
  */
 const NotionPage = ({ post, className }) => {
+  if (!post?.blockMap?.block) {
+    return null
+  }
+
   // 是否关闭数据库和画册的点击跳转
   const POST_DISABLE_GALLERY_CLICK = siteConfig('POST_DISABLE_GALLERY_CLICK')
   const POST_DISABLE_DATABASE_CLICK = siteConfig('POST_DISABLE_DATABASE_CLICK')
